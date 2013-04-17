@@ -1,0 +1,29 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Favicon\n"
+"POT-Creation-Date: 2013-04-17 12:44+0100\n"
+"PO-Revision-Date: 2013-04-17 12:44+0100\n"
+"Last-Translator: Paul van der Meijs <info@lowtone.nl>\n"
+"Language-Team: Lowtone <info@lowtone.nl>\n"
+"Language: Dutch\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.5\n"
+"X-Poedit-KeywordsList: __\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: ../..\n"
+
+#: ../../lowtone-ui-favicon.php:44 ../../lowtone-ui-favicon.php:47
+#: ../../lowtone-ui-favicon.php:60
+msgid "Favicon"
+msgstr "Favicon"
+
+#: ../../lowtone-ui-favicon.php:61
+msgid "Submit the URL to your icon."
+msgstr "Voer de URL van de afbeelding in."
+
+#: ../../lowtone-ui-favicon.php:66
+msgid "Favicon URL"
+msgstr "Favicon URL"
