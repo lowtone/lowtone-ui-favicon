@@ -18,7 +18,8 @@
 
 namespace lowtone\ui\favicon {
 
-	use lowtone\ui\forms\Form,
+	use lowtone\types\arrays\Map,
+		lowtone\ui\forms\Form,
 		lowtone\ui\forms\Input,
 		lowtone\content\packages\Package;
 
@@ -33,6 +34,12 @@ namespace lowtone\ui\favicon {
 			Package::INIT_PACKAGES => array("lowtone"),
 			Package::INIT_MERGED_PATH => __NAMESPACE__,
 			Package::INIT_SUCCESS => function() {
+
+				$settings = new Map(favicon());
+
+				$icon = function($id) use ($settings) {
+					return call_user_func_array(array($settings, "path"), func_get_args());
+				};
 				
 				add_action("admin_init", function() {
 
@@ -40,7 +47,7 @@ namespace lowtone\ui\favicon {
 
 				});
 
-				add_action("admin_menu", function() {
+				add_action("admin_menu", function() use ($icon) {
 					add_theme_page(__("Favicon", "lowtone_ui_favicon"), __("Favicon", "lowtone_ui_favicon"), "manage_options", "lowtone_ui_favicon", function() {
 						echo '<div class="wrap">' . 
 							get_screen_icon() . 
@@ -57,30 +64,107 @@ namespace lowtone\ui\favicon {
 							'</div>';
 					});
 
-					add_settings_section("lowtone_ui_favicon", __("Favicon", "lowtone_ui_favicon"), function() {
-						echo '<p>' . __("Submit the URL to your icon.", "lowtone_ui_favicon") . '</p>';
-					}, "lowtone_ui_favicon");
-
 					$form = new Form();
 
-					add_settings_field("favicon", __("Favicon URL", "lowtone_ui_favicon"), function() use ($form) {
+					// Default
+
+					add_settings_section("lowtone_ui_favicon_default", __("Default", "lowtone_ui_favicon"), function() {
+						echo '<p>' . __("Default icon.", "lowtone_ui_favicon") . '</p>';
+					}, "lowtone_ui_favicon");
+
+					add_settings_field("favicon_default", __("Default icon", "lowtone_ui_favicon"), function() use ($form, $icon) {
 
 						$form
 							->createInput(Input::TYPE_TEXT, array(
-								Input::PROPERTY_NAME => "favicon",
-								Input::PROPERTY_VALUE =>  get_option("favicon")
+								Input::PROPERTY_NAME => array("favicon", "default"),
+								Input::PROPERTY_VALUE =>  $icon("default"),
 							))
 							->addClass("setting")
 							->out();
 
-					}, "lowtone_ui_favicon", "lowtone_ui_favicon");
+					}, "lowtone_ui_favicon", "lowtone_ui_favicon_default");
+
+					// Touch
+
+					add_settings_section("lowtone_ui_favicon_touch", __("Touch", "lowtone_ui_favicon"), function() {
+						echo '<p>' . __("Touch icon for iOS 2.0+ and Android 2.1+.", "lowtone_ui_favicon") . '</p>';
+					}, "lowtone_ui_favicon");
+
+					add_settings_field("favicon_touch", __("Default icon", "lowtone_ui_favicon"), function() use ($form, $icon) {
+
+						$form
+							->createInput(Input::TYPE_TEXT, array(
+								Input::PROPERTY_NAME => array("favicon", "touch"),
+								Input::PROPERTY_VALUE =>  $icon("touch"),
+							))
+							->addClass("setting")
+							->out();
+
+					}, "lowtone_ui_favicon", "lowtone_ui_favicon_touch");
+
+					// Tile
+
+					add_settings_section("lowtone_ui_favicon_tile", __("Tile", "lowtone_ui_favicon"), function() {
+						echo '<p>' . __("Windows 8 style tile icon.", "lowtone_ui_favicon") . '</p>';
+					}, "lowtone_ui_favicon");
+
+					add_settings_field("favicon_tile_icon", __("Tile icon", "lowtone_ui_favicon"), function() use ($form, $icon) {
+
+						$form
+							->createInput(Input::TYPE_TEXT, array(
+								Input::PROPERTY_NAME => array("favicon", "tile", "icon"),
+								Input::PROPERTY_VALUE =>  $icon(array("tile", "icon")),
+							))
+							->addClass("setting")
+							->out();
+
+					}, "lowtone_ui_favicon", "lowtone_ui_favicon_tile");
+
+					add_settings_field("favicon_tile_color", __("Tile color", "lowtone_ui_favicon"), function() use ($form, $icon) {
+
+						$form
+							->createInput(Input::TYPE_TEXT, array(
+								Input::PROPERTY_NAME => array("favicon", "tile", "color"),
+								Input::PROPERTY_VALUE =>  $icon(array("tile", "color")),
+							))
+							->addClass("setting")
+							->out();
+
+					}, "lowtone_ui_favicon", "lowtone_ui_favicon_tile");
+
+					add_settings_field("favicon_tile_news", __("Include news", "lowtone_ui_favicon"), function() use ($form, $icon) {
+
+						$form
+							->createInput(Input::TYPE_CHECKBOX, array(
+								Input::PROPERTY_NAME => array("favicon", "tile", "include_news"),
+								Input::PROPERTY_VALUE =>  1,
+								Input::PROPERTY_SELECTED => $icon(array("tile", "include_news")),
+							))
+							->addClass("setting")
+							->out();
+
+					}, "lowtone_ui_favicon", "lowtone_ui_favicon_tile");
 				});
 
-				add_action("wp_head", function() {
-					if (!($favIcon = trim(get_option("favicon"))))
+				// Icon output
+
+				add_action("wp_head", function() use ($settings, $icon) {
+					if ($settings->count() < 1)
 						return;
 
-					echo '<link rel="shortcut icon" href="' . htmlentities($favIcon) . '" />';
+					if ($default = $icon("default")) 
+						echo '<link rel="icon" sizes="16x16 32x32" href="' . ($escapedDefault = htmlentities($default)) . '" />' . 
+							'<!--[if IE]><link rel="shortcut icon" href="' . $escapedDefault . '"><![endif]-->';
+
+					if ($tile = $icon("tile")) {
+						echo '<meta name="msapplication-TileColor" content="' . htmlentities($tile["color"]) . '">' .
+							'<meta name="msapplication-TileImage" content="' . htmlentities($tile["icon"]) . '">';
+
+						if (isset($tile["include_news"]))
+							echo '<!-- Tile news -->';
+
+					}
+					
 				});
 
 				// Register textdomain
@@ -91,5 +175,11 @@ namespace lowtone\ui\favicon {
 
 			}
 		));
+
+	// Functions
+	
+	function favicon() {
+		return get_option("favicon") ?: array();
+	}
 
 }
